@@ -1,0 +1,1 @@
+SELECT s.id, s.name, s.price_per_seat, s.row_count, s.column_count from studio s;
