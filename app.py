@@ -2,12 +2,10 @@ import datetime
 import os
 from typing import List
 from flask import Flask, redirect, send_from_directory, url_for
-from Controller import accountController, employeeController, memberController
-from Controller import adminController
+from Controller import accountController
 from Controller.adminController import admin_bp
 from Controller.memberController import member_bp
 from Controller.accountController import account_bp
-from Controller.employeeController import employee_bp
 
 
 
@@ -16,7 +14,6 @@ def main():
     app.register_blueprint(admin_bp)
     app.register_blueprint(member_bp)
     app.register_blueprint(account_bp)
-    app.register_blueprint(employee_bp)
     app.secret_key = "secret_code"
 
     @app.route('/css/<path:filename>')

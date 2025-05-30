@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List
 from Model.movie import Movie
 from Model.studio import Studio
 

@@ -175,7 +175,7 @@ form button {
 
 .seat-info-box {
   position: relative;
-  bottom: 50px;
+  bottom: 80px;
   max-width: 400px;
   height: 170px;
   margin: 5px auto;
@@ -190,6 +190,7 @@ form button {
 .seat-info-box p {
   font-size: 12px;
   margin: 8px 0;
+  padding: 0;
 }
 
 textarea {

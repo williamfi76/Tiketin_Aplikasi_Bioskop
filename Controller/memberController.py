@@ -2,9 +2,6 @@ from datetime import datetime
 from typing import List
 
 from flask import Blueprint, app, redirect, render_template, request, session, url_for
-from Controller import accountController
-from Model.foodBeverage import FoodBeverage
-from Model.foodBeverageStatus import FoodBeverageStatus
 from Model.genre import Genre
 from Model.member import Member
 from Controller import mysqlConnector
@@ -14,7 +11,6 @@ from Model.showing import Showing
 from Model.studio import Studio
 from Model.ticket import Ticket
 from Model.ticketStatus import TicketStatus
-from Model.transactionFoodBeverage import TransactionFoodBeverage
 from Model.transactionTicket import TransactionTicket
 
 member_bp = Blueprint('member', __name__, url_prefix='/member')
@@ -130,13 +126,6 @@ def showMemberTicketData():
         time_showings.append([date,time])
     return render_template("tickets_page.html", trans= trans, time_showings=time_showings)
 
-@member_bp.route("/food-beverage")
-def showMemberFoodBeverageData():
-    if "id" not in session:
-        return redirect(url_for("login_route"))
-    accId = session["id"]
-    return render_template("food_beverage_page.html")
-
 def getTransactionTickets(trans_id:int):
     try:
         db = mysqlConnector.connect()
@@ -176,7 +165,7 @@ def getSingleTransaction(trans_id:int):
         tickets = getTransactionTickets(data[0])
         showing = getShowingData(data[1])
         ticketStatus =  TicketStatus(data[2])
-        return TransactionTicket(data[0],tickets,getMemberData(session["id"]), showing, ticketStatus, None)
+        return TransactionTicket(data[0],tickets,getMemberData(session["id"]), showing, ticketStatus)
     except Exception as e:
         print("==========================")
         print(e)
@@ -219,7 +208,7 @@ def getThisUserTransaction():
             tickets = getTransactionTickets(data[0])
             showing = getShowingData(data[1])
             ticketStatus =  TicketStatus(data[2])
-            transactions.append(TransactionTicket(data[0],tickets,getMemberData(session["id"]), showing, ticketStatus, None))
+            transactions.append(TransactionTicket(data[0],tickets,getMemberData(session["id"]), showing, ticketStatus,))
         
         return transactions
     except Exception as e:
@@ -396,47 +385,6 @@ def getAllMemberTicketTransactions(member: Member):
     finally:
         db.close()
 
-def publishReviewFor(id_review:int, score:int, review:str):
-    try:
-        db = mysqlConnector.connect()
-        cursor = db.cursor()
-        query = "UPDATE review_film SET score=%s, review=%s WHERE id=%s"
-        cursor.execute(query, (score, review, id_review))
-        db.commit()
-        return True
-    except Exception as e:
-        print(e)
-        db.rollback()
-        return False
-    finally:
-        db.close()
-
-
-def getMemberAllFoodBevereageTransactions(member: Member):
-    transactions:List[TransactionFoodBeverage] = []
-    try:
-        db = mysqlConnector.connect()
-        cursor = db.cursor()
-        query = """  
-            SELECT t.id, t.nominal, t.member_id, tt.showing_id, tt.ticket_status
-            from transaction as t
-            RIGHT JOIN transaction_ticket as tt ON t.id=tt.trans_id
-            where t.member_id=%s
-        """
-        cursor.execute(query, (member.get_id(),))
-        for data in cursor.fetchall():
-            showing = getShowingData(data[3])
-            tickets = getTicketsForShowing(data[0])
-            transactions.append(TransactionTicket(data[0], tickets, member, showing, TicketStatus(data[4]),None))
-        return transactions
-
-    except Exception as e:
-        print(e)
-        db.rollback()
-        return transactions
-    finally:
-        db.close()
-
 def getMemberData(memberId:int):
     try:
         db = mysqlConnector.connect()
@@ -453,33 +401,6 @@ def getMemberData(memberId:int):
     finally:
         db.close()
 
-def buyFoodBeverage(memberId:int, food_beverage_ids:List[int]):
-    try:
-        db = mysqlConnector.connect()
-        cursor = db.cursor()
-        items:List[FoodBeverage] = []
-        for fbId in food_beverage_ids:
-            items.append(accountController.getFoodBeverageData(fbId))
-        totalPrice = 0
-        for item in items:
-            totalPrice += item.get_price()
-        query_transaction = "INSERT INTO transaction (nominal, member_id) VALUES (%s, %s)"
-        cursor.execute(query_transaction, (totalPrice, memberId))
-        trans_id = cursor.lastrowid
-        query_transaction = "INSERT INTO transaction_food_beverage (trans_id, status) VALUES (%s, %s)"
-        cursor.execute(query_transaction, (trans_id, FoodBeverageStatus.UNREDEEMED.value))
-        for item in items:
-            query_transaction = "INSERT INTO order_food_beverage (trans_id, item) VALUES (%s, %s)"
-            cursor.execute(query_transaction, (trans_id, item.get_id()))
-        db.commit()
-        return True
-    except Exception as e:
-        db.rollback()
-        print(e)
-        return False
-    finally:
-        db.close()
-
 def buyTicket(memberId:int, idShowing: int, tickets:List[str]):
     try:
         db = mysqlConnector.connect()
@@ -489,15 +410,8 @@ def buyTicket(memberId:int, idShowing: int, tickets:List[str]):
         query_transaction = "INSERT INTO transaction (nominal, member_id) VALUES (%s, %s)"
         cursor.execute(query_transaction, (nominal, memberId))
         transId = cursor.lastrowid
-        review_query = """
-            INSERT INTO review_film(movie_id, member_id, score, review)
-            VALUES
-            (%s, %s, %s, %s)
-        """
-        cursor.execute(review_query, (showing.get_movie().get_id(), memberId, 0, ""))
-        reviewId = cursor.lastrowid
-        query_trans_ticket = "INSERT INTO transaction_ticket (trans_id, ticket_status, review_id, showing_id) VALUES (%s, %s, %s, %s)"
-        cursor.execute(query_trans_ticket, (transId, TicketStatus.UNREDEEMED.value, reviewId, idShowing))
+        query_trans_ticket = "INSERT INTO transaction_ticket (trans_id, ticket_status, showing_id) VALUES (%s, %s, %s)"
+        cursor.execute(query_trans_ticket, (transId, TicketStatus.UNREDEEMED.value, idShowing))
 
         query_tickets = """
             INSERT INTO ticket (trans_id, seat_name)
