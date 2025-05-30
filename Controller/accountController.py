@@ -2,12 +2,8 @@ from typing import List
 from flask import Blueprint, redirect, render_template, request, session, url_for
 from Controller.memberController import getMemberData
 from Model.account import Account
-from Model.foodBeverage import FoodBeverage
-from Model.foodBeverageType import FoodBeverageType
-from Model.movie import Movie
 from Model.role import Role
 from Controller import mysqlConnector
-from Model.showing import Showing
 
 account_bp = Blueprint('account', __name__, url_prefix='/account')
 
@@ -19,8 +15,6 @@ def showUserProfile():
       return render_template("admin_profile_page.html")
     elif int(session['role']) == Role.MEMBER.value:
       return render_template("member_profile_page.html")
-    elif int(session['role']) == Role.EMPLOYEE.value:
-      return render_template("employee_profile_page.html")
 
     # return render_template("member_profile_page.html")
 
@@ -117,8 +111,6 @@ def show_login():
 
         if account.role == Role.ADMIN:
             return redirect(url_for("admin.showAdminProfile"))
-        elif account.role == Role.EMPLOYEE:
-            pass
         elif account.role == Role.MEMBER:
             session["pinNum"] = account.get_pin()
             session["wallet"] = int(getMemberData(account.get_id()).get_wallet())
@@ -225,22 +217,6 @@ def email_exists(email_to_check):
 
     conn.close()
     return result is not None
-
-def getFoodBeverageData(foodBeverageId:int):
-    try:
-        db = mysqlConnector.connect()
-        cursor = db.cursor()
-        query = "SELECT fb.id, fb.name, fb.price, fb.type from food_beverage as fb WHERE fb.id=%s"
-        cursor.execute(query, (foodBeverageId,))
-        data = cursor.fetchone()
-        item = FoodBeverage(data[0], data[1], FoodBeverageType(data[3]), data[2])
-        return item
-    except Exception as e:
-        print(e)
-        db.rollback()
-        return None
-    finally:
-        db.close()
 
 def logout():
     session.clear()

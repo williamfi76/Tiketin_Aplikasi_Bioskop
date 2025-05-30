@@ -3,15 +3,13 @@ import re
 from datetime import datetime
 from typing import List
 
-from flask import Blueprint, app, redirect, render_template, request, session, url_for
+from flask import Blueprint, redirect, render_template, request, session, url_for
 from Controller import mysqlConnector
 from Controller import accountController
-from Model.foodBeverageType import FoodBeverageType
 from Model.movie import Movie
 from Model.movieStatus import MovieStatus
 from Model.role import Role
 from Model.genre import Genre
-from Model.reviewFilm import ReviewFilm
 from Model.studio import Studio
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
@@ -26,8 +24,8 @@ def showAddNewShowing():
         movie_id = int(request.form.get("movie_name"))
         studio_id = int(request.form.get("studio_name"))
         print("movie-id: ", movie_id)
-        start_time = start_time = datetime.strptime(request.form.get("start_time"), "%Y-%m-%dT%H:%M")
-        end_time = start_time = datetime.strptime(request.form.get("end_time"), "%Y-%m-%dT%H:%M")
+        start_time = datetime.strptime(request.form.get("start_time"), "%Y-%m-%dT%H:%M")
+        end_time = datetime.strptime(request.form.get("end_time"), "%Y-%m-%dT%H:%M")
 
         if addNewShowing(movie_id, start_time, end_time, studio_id):
             return redirect(url_for("admin.showStudioBooking"))
@@ -130,10 +128,6 @@ def showShowingMovies():
     movies = getAllMovies()
     return render_template("admin_showing_management.html", movies=movies)
 
-@admin_bp.route("/food-beverage")
-def showMemberFoodBeverageData():
-    return render_template("/")
-
 @admin_bp.route("/")
 def showAdminProfile():
     if "id" not in session:
@@ -234,7 +228,7 @@ def getAllMovies():
         query = "SELECT m.id, m.name, m.description, m.duration, m.poster_img_path, m.status from movie m"
         cursor.execute(query)
         for movie in cursor.fetchall():
-            movies.append(Movie(movie[0], movie[1], movie[2], movie[3], movie[4],[], [], MovieStatus(movie[5])))
+            movies.append(Movie(movie[0], movie[1], movie[2], movie[3], movie[4],[],MovieStatus(movie[5])))
         return movies 
     except Exception as e:
         print("==========================")
@@ -249,8 +243,6 @@ def addNewShowing(movieId:int, startTime:datetime, endTime:datetime, studioId:in
     try:
         db = mysqlConnector.connect()
         cursor = db.cursor()
-
-        # Masukkan data Showing ke tabel food_beverage
         cursor.execute("""
             UPDATE movie SET status=1 where id = %s;
         """, (movieId,))
@@ -320,25 +312,3 @@ def addNewMovie(name:str, description:str, duration:int, genres: List[Genre] = [
 
     finally:
         db.close()
-
-def addNewFoodBeverage(name:str, fbType:FoodBeverageType, price:float = 0):
-    try:
-        db = mysqlConnector.connect()
-        cursor = db.cursor()
-
-        # Masukkan data Food/Beverage ke tabel food_beverage
-        cursor.execute("""
-            INSERT INTO food_beverage (name, type, price)
-            VALUES (%s, %s, %s);
-        """, (name, fbType.value, price))
-
-        db.commit()
-        return True
-
-    except Exception as e:
-        db.rollback()
-        return False
-
-    finally:
-        db.close()
-

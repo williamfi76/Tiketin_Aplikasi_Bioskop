@@ -14,11 +14,10 @@ body {
 }
 
 .greeting {
-    position: relative;
     color: yellow;
+    margin-top: 10px;
+    margin-right: 250px;
     font-family:Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
-    top: 2%;
-    right: 32.5%;
     font-size: 36px;
 
 }

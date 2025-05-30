@@ -1,5 +1,3 @@
-from Model.itemType import ItemType
-
 class Transaction:
     def __init__(self, id, nominal, member:int):
         self.id = id

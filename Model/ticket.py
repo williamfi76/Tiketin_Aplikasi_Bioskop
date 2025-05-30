@@ -1,4 +1,3 @@
-import datetime
 from Model.movie import Movie
 from Model.showing import Showing
 

@@ -2,17 +2,15 @@ from typing import List
 
 from Model.movieStatus import MovieStatus
 from Model.genre import Genre
-from Model.reviewFilm import ReviewFilm
 
 class Movie:
-    def __init__(self, id: int, name:str, description:str, duration:int, poster:str, genre: List[Genre] = [], review:List[ReviewFilm] = [], status:MovieStatus = MovieStatus.NOT_SHOWING):
+    def __init__(self, id: int, name:str, description:str, duration:int, poster:str, genre: List[Genre] = [], status:MovieStatus = MovieStatus.NOT_SHOWING):
         self.id = id
         self.name = name
         self.description = description
         self.duration = duration
         self.poster = poster
         self.genre = genre
-        self.review = review
         self.status = status
 
     def get_status(self):
