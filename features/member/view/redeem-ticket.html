@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/logo.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/phone-case.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/home_page.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/navbar.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style-showings.css')}}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/redeem-ticket.css')}}"
+    />
+    <title>Home Page</title>
+  </head>
+  <body>
+    <div id="phone-case">
+      <div class="logo">Tiketin</div>
+      <a class="back-button" href="{{ url_for('member.showMemberTicketData') }}"
+        >Back</a
+      >
+      <div class="ticket-container">
+        <img
+          class="poster"
+          class="poster"
+          src="{{url_for('static', filename='asset/poster/' ~ movie.get_poster())}}"
+          alt="Movie Poster"
+        />
+        <div class="ticket-info">
+          <h2 class="movie-title">{{movie.get_name()}}</h2>
+          <p class="date-time">Time: {{showing.get_showingTime()}}</p>
+          <p class="studio">Studio: {{showing.get_studio().get_name()}}</p>
+          <p class="seats">Seats: {{tickets | join(", ")}}</p>
+          <p class="price">
+            Total Price: Rp {{"{:,.0f}".format(trans.get_nominal())}}
+          </p>
+        </div>
+      </div>
+      <form method="post">
+        <button type="submit" class="submit">REDEEM</button>
+      </form>
+    </div>
+  </body>
+</html>

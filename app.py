@@ -1,28 +1,19 @@
-import datetime
-import os
-from typing import List
-from flask import Flask, redirect, send_from_directory, url_for
-from Controller import accountController
-from Controller.adminController import admin_bp
-from Controller.memberController import member_bp
-from Controller.accountController import account_bp
+from flask import Flask, redirect, url_for
+from features.account.controller import accountController
+from features.admin.controller import adminController
+from features.admin.controller.adminController import admin_bp
+from features.member.controller.memberController import member_bp
+from features.account.controller.accountController import account_bp
 
 
 
 def main():
-    app = Flask(__name__, template_folder='View', static_url_path='/css', static_folder='View/css')
+    app = Flask(__name__)
     app.register_blueprint(admin_bp)
     app.register_blueprint(member_bp)
     app.register_blueprint(account_bp)
     app.secret_key = "secret_code"
-
-    @app.route('/css/<path:filename>')
-    def custom_css(filename):
-        return send_from_directory(os.path.join('view', 'css'), filename)
-    
-    @app.route('/View/<path:filename>')
-    def custom_view_static(filename):
-        return send_from_directory('view', filename)
+    adminController.updateShowing()
 
     @app.route("/")
     def index():
@@ -40,5 +31,4 @@ def main():
     app.run(debug=True)
 
 if __name__ == '__main__':
-    # adminController.addNewShowing(1, datetime.datetime(2025,7,12,10,0,0), datetime.datetime(2025,7,12,10,0,0), 1)
     main()
